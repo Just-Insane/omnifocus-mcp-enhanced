@@ -6,7 +6,34 @@ export interface GetForecastTasksOptions {
   includeDeferredOnly?: boolean;
 }
 
-export async function getForecastTasks(options: GetForecastTasksOptions = {}): Promise<string> {
+export interface ForecastTask {
+  id: string;
+  name: string;
+  note: string;
+  taskStatus: string;
+  flagged: boolean;
+  dueDate: string | null;
+  deferDate: string | null;
+  plannedDate: string | null;
+  estimatedMinutes: number | null;
+  projectId: string | null;
+  projectName: string | null;
+  inInbox: boolean;
+  isDue: boolean;
+  tags: Array<{ id: string; name: string }>;
+}
+
+export interface ForecastData {
+  exportDate: string;
+  tasksByDate: Record<string, ForecastTask[]>;
+}
+
+export interface ForecastResult {
+  text: string;
+  data: ForecastData;
+}
+
+export async function getForecastTasksResult(options: GetForecastTasksOptions = {}): Promise<ForecastResult> {
   const { days = 7, hideCompleted = true, includeDeferredOnly = false } = options;
   
   try {
@@ -17,13 +44,9 @@ export async function getForecastTasks(options: GetForecastTasksOptions = {}): P
       includeDeferredOnly: includeDeferredOnly
     });
     
-    if (typeof result === 'string') {
-      return result;
-    }
-    
     // If result is an object, format it
     if (result && typeof result === 'object') {
-      const data = result as any;
+      const data = result as ForecastData & { error?: string };
       
       if (data.error) {
         throw new Error(data.error);
@@ -89,13 +112,17 @@ export async function getForecastTasks(options: GetForecastTasksOptions = {}): P
         output += "No forecast data available\n";
       }
       
-      return output;
+      return { text: output, data };
     }
-    
-    return "Unexpected result format from OmniFocus";
+
+    throw new Error("OmniFocus returned an unstructured forecast result");
     
   } catch (error) {
     console.error("Error in getForecastTasks:", error);
     throw new Error(`Failed to get forecast tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+export async function getForecastTasks(options: GetForecastTasksOptions = {}): Promise<string> {
+  return (await getForecastTasksResult(options)).text;
 }

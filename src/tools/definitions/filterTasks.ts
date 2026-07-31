@@ -72,7 +72,7 @@ export const schema = z.object({
   sortOrder: z.enum(["asc", "desc"]).optional().describe("Sort order (default: asc)")
 });
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   try {
     const result = await filterTasks(args);
 

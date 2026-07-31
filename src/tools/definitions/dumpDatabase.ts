@@ -7,7 +7,20 @@ export const schema = z.object({
   hideRecurringDuplicates: z.boolean().optional().describe("Set to true to hide duplicate instances of recurring tasks (default: true)")
 });
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+const identifiedRecord = z.object({ id: z.string() }).passthrough();
+
+export const outputSchema = z.object({
+  schemaVersion: z.literal('1.0'),
+  database: z.object({
+    exportDate: z.string(),
+    tasks: z.array(identifiedRecord),
+    projects: z.record(identifiedRecord),
+    folders: z.record(identifiedRecord),
+    tags: z.record(identifiedRecord),
+  }),
+});
+
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   try {
     // Get raw database
     const database = await dumpDatabase();
@@ -22,7 +35,11 @@ export async function handler(args: z.infer<typeof schema>, extra: RequestHandle
       content: [{
         type: "text" as const,
         text: formattedReport
-      }]
+      }],
+      structuredContent: {
+        schemaVersion: '1.0' as const,
+        database,
+      },
     };
   } catch (err: unknown) {
     return {

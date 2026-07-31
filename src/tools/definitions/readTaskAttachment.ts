@@ -59,7 +59,7 @@ export function buildAttachmentContentResponse(result: {
   return { content };
 }
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   const validation = validateReadTaskAttachmentParams(args);
   if (!validation.valid) {
     return {

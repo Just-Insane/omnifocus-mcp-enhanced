@@ -28,7 +28,7 @@ export function resolveCustomPerspectiveDisplayMode(args: Partial<z.infer<typeof
   return 'project_tree';
 }
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   try {
     const result = await getCustomPerspectiveTasks({
       perspectiveName: args.perspectiveName,
