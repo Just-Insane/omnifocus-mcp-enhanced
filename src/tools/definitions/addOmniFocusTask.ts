@@ -16,7 +16,7 @@ export const schema = z.object({
   parentTaskName: z.string().optional().describe("The name of the parent task to create this task as a subtask (alternative to parentTaskId)")
 });
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   try {
     // Call the addOmniFocusTask function
     const result = await addOmniFocusTask(args as AddOmniFocusTaskParams);

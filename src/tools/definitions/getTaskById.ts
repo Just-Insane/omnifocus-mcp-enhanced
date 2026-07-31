@@ -50,7 +50,7 @@ export function formatTaskInfo(task: Awaited<ReturnType<typeof getTaskById>> ext
   return infoText;
 }
 
-export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra) {
+export async function handler(args: z.infer<typeof schema>, extra: RequestHandlerExtra<any, any>) {
   try {
     // Validate that either taskId or taskName is provided
     if (!args.taskId && !args.taskName) {
