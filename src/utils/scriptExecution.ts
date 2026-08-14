@@ -9,6 +9,25 @@ import { existsSync } from 'fs';
 
 const execAsync = promisify(exec);
 
+export function buildOmniFocusParameterInjection(args: Record<string, unknown>): string {
+  const argsJson = JSON.stringify(args);
+  return `
+    // Injected parameters
+    const injectedArgs = ${argsJson};
+    const perspectiveName = injectedArgs.perspectiveName || null;
+    const perspectiveId = injectedArgs.perspectiveId || null;
+    const days = Number.isInteger(injectedArgs.days) && injectedArgs.days > 0 ? injectedArgs.days : 7;
+    const hideCompleted = injectedArgs.hideCompleted !== undefined ? injectedArgs.hideCompleted : true;
+    const includeDeferredOnly = injectedArgs.includeDeferredOnly === true;
+    const limit = injectedArgs.limit || 100;
+    const includeBuiltIn = injectedArgs.includeBuiltIn !== undefined ? injectedArgs.includeBuiltIn : false;
+    const includeSidebar = injectedArgs.includeSidebar !== undefined ? injectedArgs.includeSidebar : true;
+    const format = injectedArgs.format || "detailed";
+    const tagName = injectedArgs.tagName || null;
+    const exactMatch = injectedArgs.exactMatch !== undefined ? injectedArgs.exactMatch : false;
+    `;
+}
+
 /**
  * Safely execute AppleScript by writing to a temp file
  * This avoids shell escaping issues with quotes and special characters
@@ -43,7 +62,7 @@ export async function executeJXA(script: string): Promise<any[]> {
   try {
     // Write the script to a temporary file in the system temp directory
     const tempFile = join(tmpdir(), `jxa_script_${Date.now()}.js`);
-    
+
     // Write the script to the temporary file
     writeFileSync(tempFile, script);
     
@@ -107,21 +126,8 @@ export async function executeOmniFocusScript(scriptPath: string, args?: any): Pr
     
     // If arguments are provided, inject them into the script
     if (args && Object.keys(args).length > 0) {
-      const argsJson = JSON.stringify(args);
       // Inject parameters at the beginning of the script
-      const parameterInjection = `
-    // Injected parameters
-    const injectedArgs = ${argsJson};
-    const perspectiveName = injectedArgs.perspectiveName || null;
-    const perspectiveId = injectedArgs.perspectiveId || null;
-    const hideCompleted = injectedArgs.hideCompleted !== undefined ? injectedArgs.hideCompleted : true;
-    const limit = injectedArgs.limit || 100;
-    const includeBuiltIn = injectedArgs.includeBuiltIn !== undefined ? injectedArgs.includeBuiltIn : false;
-    const includeSidebar = injectedArgs.includeSidebar !== undefined ? injectedArgs.includeSidebar : true;
-    const format = injectedArgs.format || "detailed";
-    const tagName = injectedArgs.tagName || null;
-    const exactMatch = injectedArgs.exactMatch !== undefined ? injectedArgs.exactMatch : false;
-    `;
+      const parameterInjection = buildOmniFocusParameterInjection(args);
       
       // Replace any hardcoded parameters in the script with injected ones
       scriptContent = scriptContent.replace(
@@ -214,4 +220,3 @@ export async function executeOmniFocusScript(scriptPath: string, args?: any): Pr
     throw error;
   }
 }
-    
