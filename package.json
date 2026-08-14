@@ -14,7 +14,7 @@
     "dev": "tsc -w",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && node --test tests/*.test.mjs dist/tools/primitives/*.test.js"
+    "test": "npm run build && node --test tests/*.test.mjs dist/tools/primitives/*.test.js dist/utils/*.test.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
